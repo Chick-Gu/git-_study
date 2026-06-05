@@ -16,7 +16,7 @@ int main() {
     TodoManager manager;
     int choice;
 
-    std::cout << "欢迎使用待办事项管理器！" << std::endl;
+    std::cout << "欢迎使用待办事项管理器BETA版本！" << std::endl;
 
     do {
         printMenu();
