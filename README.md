@@ -1,46 +1,293 @@
-# TodoManager
+# TodoManager - C++ 待办事项管理器
 
-一个简单的 C++ 待办事项管理器，用于学习 Git 版本控制。
+一个使用 C++ 编写的命令行待办事项管理程序，支持添加、完成、删除和查看待办事项。
+
+## 项目概述
+
+本项目是一个轻量级的待办事项管理器，采用纯 C++ 实现，无需外部依赖。适合初学者学习 C++ 类、STL 容器和命令行交互编程。
 
 ## 功能特性
 
-- 添加待办事项（支持标题和描述）
-- 标记待办事项为完成
-- 删除待办事项
-- 查看所有待办事项列表
+| 功能 | 说明 |
+|------|------|
+| 添加待办事项 | 支持标题和可选描述 |
+| 标记完成 | 将指定待办事项标记为已完成 |
+| 删除待办事项 | 从列表中移除指定待办事项 |
+| 查看列表 | 显示所有待办事项及其状态 |
 
 ## 项目结构
 
 ```
-├── main.cpp      # 主程序入口
-├── todo.h        # 头文件（类声明）
-├── todo.cpp      # 实现文件（类方法）
-├── CMakeLists.txt # CMake 构建配置
-└── .gitignore    # Git 忽略文件
+├── main.cpp          # 主程序入口，包含菜单和用户交互
+├── todo.h            # 头文件，定义 TodoItem 结构体和 TodoManager 类
+├── todo.cpp          # 实现文件，包含所有成员方法的实现
+├── CMakeLists.txt    # CMake 构建配置文件
+└── .gitignore        # Git 忽略文件配置
 ```
 
-## 编译运行
+## 快速开始
 
-### 使用 CMake（推荐）
+### 编译项目
+
+**方式一：使用 g++ 编译器**
+
+```bash
+g++ -std=c++11 main.cpp todo.cpp -o todo_manager
+```
+
+**方式二：使用 CMake（推荐）**
 
 ```bash
 mkdir build
 cd build
 cmake ..
 make
-./todo_manager
 ```
 
-### 使用 g++
+### 运行程序
 
 ```bash
-g++ -std=c++11 main.cpp todo.cpp -o todo_manager
-./todo_manager
+./todo_manager        # Linux/macOS
+todo_manager.exe      # Windows
 ```
+
+---
+
+## 代码详解
+
+### 1. 数据结构 - todo.h
+
+#### TodoItem 结构体
+
+```cpp
+struct TodoItem {
+    int id;                    // 待办事项的唯一标识符
+    std::string title;         // 待办事项的标题
+    std::string description;  // 待办事项的详细描述（可选）
+    bool completed;            // 完成状态标记
+
+    // 构造函数，使用初始化列表初始化成员
+    TodoItem(int id, const std::string& title, const std::string& desc)
+        : id(id), title(title), description(desc), completed(false) {}
+};
+```
+
+**设计说明：**
+- `id` 使用 `int` 类型，从 1 开始自增
+- 使用 `std::string` 存储文本内容
+- `completed` 布尔值标记完成状态
+- 构造函数使用**初始化列表**语法，提高效率
+
+#### TodoManager 类
+
+```cpp
+class TodoManager {
+private:
+    std::vector<TodoItem> todos;  // 存储所有待办事项的容器
+    int nextId;                    // 下一个可用的 ID
+
+public:
+    TodoManager() : nextId(1) {}   // 构造函数，初始化 nextId 为 1
+
+    void addTodo(const std::string& title, const std::string& description);
+    void completeTodo(int id);
+    void removeTodo(int id);
+    void listTodos() const;
+    int getTodoCount() const;
+};
+```
+
+**设计说明：**
+- 使用 `std::vector` 作为容器，支持动态大小
+- `nextId` 保证每个待办事项有唯一 ID
+- 所有成员函数声明在类内，实现放在 todo.cpp 中
+
+---
+
+### 2. 实现文件 - todo.cpp
+
+#### 添加待办事项
+
+```cpp
+void TodoManager::addTodo(const std::string& title, const std::string& description) {
+    // 使用 emplace_back 直接在 vector 末尾构造对象
+    todos.emplace_back(nextId++, title, description);
+    std::cout << "待办事项添加成功！ID: " << nextId - 1 << std::endl;
+}
+```
+
+**要点：**
+- `emplace_back` 比 `push_back` 效率更高，直接构造对象
+- `nextId++` 先返回当前值再自增，确保新对象的 ID 正确
+- 自增后的 `nextId` 为下一次使用做准备
+
+#### 标记完成
+
+```cpp
+void TodoManager::completeTodo(int id) {
+    // 遍历 vector 查找匹配的待办事项
+    for (auto& todo : todos) {
+        if (todo.id == id) {
+            todo.completed = true;
+            std::cout << "待办事项 #" << id << " 已标记完成！" << std::endl;
+            return;
+        }
+    }
+    // 未找到时输出错误信息
+    std::cout << "未找到 ID 为 " << id << " 的待办事项！" << std::endl;
+}
+```
+
+**要点：**
+- 使用范围 for 循环遍历容器
+- 使用引用 `auto&` 允许修改元素
+- 找到后立即返回，避免不必要的遍历
+
+#### 删除待办事项
+
+```cpp
+void TodoManager::removeTodo(int id) {
+    for (auto it = todos.begin(); it != todos.end(); ++it) {
+        if (it->id == id) {
+            todos.erase(it);  // erase 会使迭代器失效
+            std::cout << "待办事项 #" << id << " 已删除！" << std::endl;
+            return;
+        }
+    }
+    std::cout << "未找到 ID 为 " << id << " 的待办事项！" << std::endl;
+}
+```
+
+**要点：**
+- 使用迭代器而非范围 for 循环，因为需要调用 `erase`
+- `erase` 会删除元素并返回下一个有效迭代器
+- 注意迭代器失效问题（此处删除后直接返回）
+
+#### 查看列表
+
+```cpp
+void TodoManager::listTodos() const {
+    if (todos.empty()) {
+        std::cout << "暂无待办事项！" << std::endl;
+        return;
+    }
+
+    std::cout << "\n===== 待办事项列表 =====" << std::endl;
+    for (const auto& todo : todos) {
+        std::cout << "[" << (todo.completed ? "✓" : " ") << "] ";
+        std::cout << "#" << todo.id << " " << todo.title << std::endl;
+        if (!todo.description.empty()) {
+            std::cout << "    描述: " << todo.description << std::endl;
+        }
+    }
+    std::cout << "========================\n" << std::endl;
+}
+```
+
+**要点：**
+- `const` 成员函数承诺不修改对象状态
+- `const auto&` 遍历，防止意外修改
+- 三目运算符 `? :` 用于显示完成状态符号
+- 空描述不显示，保持界面整洁
+
+---
+
+### 3. 主程序 - main.cpp
+
+#### 菜单打印函数
+
+```cpp
+void printMenu() {
+    std::cout << "\n===== 待办事项管理器 =====" << std::endl;
+    std::cout << "1. 添加待办事项" << std::endl;
+    std::cout << "2. 标记完成" << std::endl;
+    std::cout << "3. 删除待办事项" << std::endl;
+    std::cout << "4. 查看所有待办事项" << std::endl;
+    std::cout << "5. 退出" << std::endl;
+    std::cout << "请输入选项: ";
+}
+```
+
+#### 主循环
+
+```cpp
+int main() {
+    TodoManager manager;  // 创建管理器实例
+    int choice;
+
+    std::cout << "欢迎使用待办事项管理器BETA版本！" << std::endl;
+
+    do {
+        printMenu();
+        std::cin >> choice;
+
+        switch (choice) {
+            case 1: {
+                // 添加待办事项
+                std::string title, desc;
+                std::cout << "请输入标题: ";
+                std::cin.ignore();                    // 清除输入缓冲区
+                std::getline(std::cin, title);       // 读取整行（包括空格）
+                std::cout << "请输入描述（可选）: ";
+                std::getline(std::cin, desc);
+                manager.addTodo(title, desc);
+                break;
+            }
+            case 2: {
+                // 标记完成
+                int id;
+                std::cout << "请输入待办事项 ID: ";
+                std::cin >> id;
+                manager.completeTodo(id);
+                break;
+            }
+            case 3: {
+                // 删除待办事项
+                int id;
+                std::cout << "请输入待办事项 ID: ";
+                std::cin >> id;
+                manager.removeTodo(id);
+                break;
+            }
+            case 4:
+                manager.listTodos();
+                break;
+            case 5:
+                std::cout << "感谢使用待办事项管理器！" << std::endl;
+                break;
+            default:
+                std::cout << "无效选项，请重新输入！" << std::endl;
+        }
+    } while (choice != 5);  // 用户选择 5 时退出
+
+    return 0;
+}
+```
+
+**关键设计：**
+- `do-while` 循环确保菜单至少显示一次
+- `switch-case` 处理多分支逻辑
+- `std::cin.ignore()` 清除缓冲区，避免读取残留的换行符
+- `std::getline()` 读取包含空格的整行输入
+
+---
 
 ## 使用示例
 
 ```
+欢迎使用待办事项管理器BETA版本！
+
+===== 待办事项管理器 =====
+1. 添加待办事项
+2. 标记完成
+3. 删除待办事项
+4. 查看所有待办事项
+5. 退出
+请输入选项: 1
+请输入标题: 学习 C++
+请输入描述（可选）: 复习类和对象
+待办事项添加成功！ID: 1
+
 ===== 待办事项管理器 =====
 1. 添加待办事项
 2. 标记完成
@@ -49,41 +296,84 @@ g++ -std=c++11 main.cpp todo.cpp -o todo_manager
 5. 退出
 请输入选项: 1
 请输入标题: 学习 Git
-请输入描述（可选）: 学习基本的 Git 命令
-待办事项添加成功！ID: 1
+请输入描述（可选）: 掌握基本命令
+待办事项添加成功！ID: 2
+
+===== 待办事项管理器 =====
+1. 添加待办事项
+2. 标记完成
+3. 删除待办事项
+4. 查看所有待办事项
+5. 退出
+请输入选项: 4
+
+===== 待办事项列表 =====
+[ ] #1 学习 C++
+    描述: 复习类和对象
+[ ] #2 学习 Git
+    描述: 掌握基本命令
+========================
+
+===== 待办事项管理器 =====
+1. 添加待办事项
+2. 标记完成
+3. 删除待办事项
+4. 查看所有待办事项
+5. 退出
+请输入选项: 2
+请输入待办事项 ID: 1
+待办事项 #1 已标记完成！
+
+===== 待办事项管理器 =====
+1. 添加待办事项
+2. 标记完成
+3. 删除待办事项
+4. 查看所有待办事项
+5. 退出
+请输入选项: 4
+
+===== 待办事项列表 =====
+[✓] #1 学习 C++
+    描述: 复习类和对象
+[ ] #2 学习 Git
+    描述: 掌握基本命令
+========================
+
+===== 待办事项管理器 =====
+1. 添加待办事项
+2. 标记完成
+3. 删除待办事项
+4. 查看所有待办事项
+5. 退出
+请输入选项: 5
+感谢使用待办事项管理器！
 ```
 
-## Git 学习步骤
+---
 
-### 1. 初始化本地仓库
+## C++ 知识点总结
 
-```bash
-git init
-```
+| 知识点 | 代码中的应用 |
+|--------|-------------|
+| **类封装** | `TodoManager` 类封装了所有业务逻辑 |
+| **结构体** | `TodoItem` 结构体组织相关数据 |
+| **构造函数初始化列表** | `TodoItem(int id, ...)` 使用初始化列表 |
+| **STL 容器** | `std::vector<TodoItem>` 存储待办事项 |
+| **迭代器** | `todos.begin()`, `todos.end()`, `erase()` |
+| **范围 for 循环** | `for (const auto& todo : todos)` |
+| **引用 & 常量引用 const&** | 避免拷贝，提高效率 |
+| **string 处理** | `std::string`, `std::getline()` |
+| **输入输出流** | `std::cin`, `std::cout` |
+| **控制流程** | `switch-case`, `do-while` |
 
-### 2. 添加文件到暂存区
+---
 
-```bash
-git add .
-```
+## 编译要求
 
-### 3. 提交到本地仓库
+- C++11 或更高标准
+- 支持 GCC 4.8+ / Clang 3.3+ / MSVC 2015+
 
-```bash
-git commit -m "Initial commit: 添加待办事项管理器"
-```
-
-### 4. 连接远程仓库
-
-```bash
-git remote add origin https://github.com/你的用户名/仓库名.git
-```
-
-### 5. 推送到远程仓库
-
-```bash
-git push -u origin main
-```
+---
 
 ## 许可证
 
