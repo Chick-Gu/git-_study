@@ -8,15 +8,21 @@ void printMenu() {
     std::cout << "2. 标记完成" << std::endl;
     std::cout << "3. 删除待办事项" << std::endl;
     std::cout << "4. 查看所有待办事项" << std::endl;
-    std::cout << "5. 退出" << std::endl;
+    std::cout << "5. 保存到文件" << std::endl;      // 新增
+    std::cout << "6. 从文件加载" << std::endl;      // 新增
+    std::cout << "7. 退出" << std::endl;            // 原来的5改为7
     std::cout << "请输入选项: ";
 }
 
 int main() {
     TodoManager manager;
     int choice;
+    const std::string filename = "todos.txt";  // 数据文件名
 
     std::cout << "欢迎使用待办事项管理器BETA版本！" << std::endl;
+    
+    // 程序启动时自动加载
+    manager.loadTodos(filename);
 
     do {
         printMenu();
@@ -50,13 +56,21 @@ int main() {
             case 4:
                 manager.listTodos();
                 break;
-            case 5:
+            case 5:  // 新增：手动保存
+                manager.saveTodos(filename);
+                break;
+            case 6:  // 新增：手动加载
+                manager.loadTodos(filename);
+                break;
+            case 7:  // 退出
+                // 程序退出时自动保存
+                manager.saveTodos(filename);
                 std::cout << "感谢使用待办事项管理器！" << std::endl;
                 break;
             default:
                 std::cout << "无效选项，请重新输入！" << std::endl;
         }
-    } while (choice != 5);
+    } while (choice != 7);
 
     return 0;
 }

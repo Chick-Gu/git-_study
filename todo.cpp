@@ -48,3 +48,50 @@ void TodoManager::listTodos() const {
 int TodoManager::getTodoCount() const {
     return todos.size();
 }
+
+void TodoManager::saveTodos(const std::string& filename) const {
+    std::ofstream file(filename);
+    if (!file) {
+        std::cout << "无法打开文件: " << filename << std::endl;
+        return;
+    }
+    
+    for (const auto& todo : todos) {
+        file << todo.id << "\n";
+        file << todo.title << "\n";
+        file << todo.description << "\n";
+        file << todo.completed << "\n";
+    }
+    
+    std::cout << "待办事项已保存到文件: " << filename << std::endl;
+}
+
+void TodoManager::loadTodos(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file) {
+        std::cout << "文件不存在，将创建新的待办事项列表" << std::endl;
+        return;
+    }
+    
+    todos.clear();
+    int id;
+    std::string title, description;
+    bool completed;
+    
+    while (file >> id) {
+        file.ignore();  // 忽略换行符
+        std::getline(file, title);
+        std::getline(file, description);
+        file >> completed;
+        file.ignore();  // 忽略换行符
+        
+        todos.emplace_back(id, title, description);
+        todos.back().completed = completed;
+        
+        if (id >= nextId) {
+            nextId = id + 1;
+        }
+    }
+    
+    std::cout << "已从文件加载 " << todos.size() << " 个待办事项" << std::endl;
+}

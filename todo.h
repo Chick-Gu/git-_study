@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <fstream>
 
 struct TodoItem {
     int id;
@@ -26,4 +27,6 @@ public:
     void removeTodo(int id);
     void listTodos() const;
     int getTodoCount() const;
+    void saveTodos(const std::string& filename) const;
+    void loadTodos(const std::string& filename);
 };
