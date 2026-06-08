@@ -604,6 +604,292 @@ gh issue edit 编号 --add-label "bug"
 
 ---
 
+## 九、Git 高级技巧
+
+### 9.1 git rebase（变基操作）
+
+**什么是变基？**
+
+变基是将一系列提交移动或合并到新的基点上，使提交历史更加线性和清晰。
+
+**基本用法：**
+```bash
+# 将当前分支变基到目标分支
+git rebase 目标分支
+
+# 交互式变基（编辑提交历史）
+git rebase -i HEAD~5  # 修改最近 5 个提交
+```
+
+**交互式变基操作：**
+```bash
+git rebase -i HEAD~3
+```
+
+编辑器中会显示：
+```
+pick abc1234 第一个提交
+pick def5678 第二个提交
+pick ghi9012 第三个提交
+```
+
+可用命令：
+- `pick` (p): 保留提交
+- `reword` (r): 修改提交信息
+- `edit` (e): 修改提交内容
+- `squash` (s): 合并到前一个提交
+- `fixup` (f): 合并到前一个提交（丢弃提交信息）
+- `drop` (d): 删除提交
+
+**rebase vs merge：**
+
+| 操作 | 优点 | 缺点 |
+|------|------|------|
+| **merge** | 保留完整历史，安全 | 历史复杂，有合并节点 |
+| **rebase** | 历史线性清晰 | 重写提交历史，可能丢失信息 |
+
+**黄金法则：**
+> 永远不要对已经推送到公共仓库的提交执行 rebase！
+
+### 9.2 git stash（暂存工作）
+
+**什么是 stash？**
+
+临时保存当前工作目录的修改，以便切换分支或进行其他操作。
+
+**基本用法：**
+```bash
+# 暂存当前修改
+git stash
+
+# 查看暂存列表
+git stash list
+# 输出示例: stash@{0}: WIP on feature: abc1234 添加新功能
+
+# 恢复最近的暂存（并删除）
+git stash pop
+
+# 恢复暂存（不删除）
+git stash apply
+
+# 恢复指定的暂存
+git stash apply stash@{1}
+
+# 删除指定暂存
+git stash drop stash@{0}
+
+# 清除所有暂存
+git stash clear
+
+# 查看暂存内容
+git stash show stash@{0}
+```
+
+**高级用法：**
+```bash
+# 暂存时添加描述
+git stash push -m "未完成的功能开发"
+
+# 暂存指定文件
+git stash push 文件1 文件2
+
+# 创建一个包含暂存内容的分支
+git stash branch 新分支名
+```
+
+### 9.3 .gitignore 高级配置
+
+**基本语法：**
+```gitignore
+# 注释（以 # 开头）
+*.log        # 忽略所有 .log 文件
+build/       # 忽略 build 目录
+!.gitkeep    # 不忽略 .gitkeep 文件（用于保持空目录）
+```
+
+**常用配置模式：**
+```gitignore
+# 编译产物
+*.o
+*.obj
+*.exe
+build/
+dist/
+bin/
+
+# IDE 配置
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+*.tmp
+
+# 依赖目录
+node_modules/
+vendor/
+
+# 日志和缓存
+*.log
+*.cache
+*.pid
+
+# 特定文件
+.env
+.secrets
+```
+
+**全局 .gitignore：**
+```bash
+# 创建全局忽略文件
+git config --global core.excludesfile ~/.gitignore_global
+
+# 编辑全局忽略文件
+nano ~/.gitignore_global
+```
+
+**匹配规则详解：**
+```gitignore
+pattern        # 匹配所有目录下的该模式
+/pattern       # 只匹配根目录下的该模式
+pattern/       # 只匹配目录
+!pattern       # 取反（不忽略）
+**/pattern     # 匹配任意深度的目录
+pattern/**     # 匹配目录下的所有内容
+```
+
+### 9.4 git cherry-pick（挑选提交）
+
+**什么是 cherry-pick？**
+
+将指定的提交应用到当前分支。
+
+**基本用法：**
+```bash
+# 挑选单个提交
+git cherry-pick 提交哈希
+
+# 挑选多个提交
+git cherry-pick 提交1 提交2 提交3
+
+# 交互式挑选
+git cherry-pick --no-commit 提交哈希
+# 修改后手动提交
+git commit
+```
+
+**常见场景：**
+- 将 hotfix 从一个分支应用到另一个分支
+- 从其他分支获取特定的修复
+
+### 9.5 git tag（标签管理）
+
+**什么是标签？**
+
+用于标记特定的提交（如版本发布）。
+
+**创建标签：**
+```bash
+# 创建轻量标签（仅包含提交引用）
+git tag v1.0.0
+
+# 创建附注标签（包含详细信息）
+git tag -a v1.0.0 -m "版本 1.0.0 发布"
+
+# 为指定提交创建标签
+git tag -a v1.0.0 提交哈希
+```
+
+**查看标签：**
+```bash
+# 列出所有标签
+git tag
+
+# 按模式筛选
+git tag -l "v1.*"
+
+# 查看标签详情
+git show v1.0.0
+```
+
+**推送标签：**
+```bash
+# 推送单个标签
+git push origin v1.0.0
+
+# 推送所有标签
+git push origin --tags
+```
+
+**删除标签：**
+```bash
+# 删除本地标签
+git tag -d v1.0.0
+
+# 删除远程标签
+git push origin :v1.0.0
+```
+
+### 9.6 git fetch vs git pull
+
+| 命令 | 说明 |
+|------|------|
+| `git fetch` | 下载远程更新到本地，但不合并 |
+| `git pull` | 下载远程更新并合并到当前分支（fetch + merge） |
+
+**使用场景：**
+```bash
+# 只想查看远程更新，不立即合并
+git fetch origin
+git diff origin/main
+
+# 直接拉取并合并
+git pull origin main
+
+# 拉取后变基（保持线性历史）
+git pull --rebase origin main
+```
+
+### 9.7 撤销操作
+
+**撤销工作区修改：**
+```bash
+# 恢复单个文件
+git checkout -- 文件名
+
+# 恢复所有文件
+git checkout .
+```
+
+**撤销暂存：**
+```bash
+git reset HEAD 文件名
+```
+
+**修改最后一次提交：**
+```bash
+# 修改提交信息
+git commit --amend
+
+# 添加遗漏的文件
+git add 遗漏的文件
+git commit --amend --no-edit
+```
+
+**回退提交：**
+```bash
+# 回退但保留修改（软重置）
+git reset --soft HEAD~1
+
+# 回退到指定提交（硬重置，慎用！）
+git reset --hard 提交哈希
+```
+
+---
+
 ## 十、常用 Git 命令参数速查
 
 ### 10.1 git status 参数
