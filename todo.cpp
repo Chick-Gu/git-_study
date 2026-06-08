@@ -2,10 +2,11 @@
 #include <iostream>
 
 void TodoManager::addTodo(const std::string& title, const std::string& description) {
-    todos.emplace_back(nextId++, title, description);
+    // 如果描述为空，添加默认描述
+    std::string desc = description.empty() ? "暂无描述" : description;
+    todos.emplace_back(nextId++, title, desc);
     std::cout << "待办事项添加成功！ID: " << nextId - 1 << std::endl;
 }
-
 void TodoManager::completeTodo(int id) {
     for (auto& todo : todos) {
         if (todo.id == id) {
