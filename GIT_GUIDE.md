@@ -76,9 +76,47 @@ git clone git@github.com:用户名/仓库名.git  # SSH方式
 git status          # 查看当前状态
 git add 文件名       # 添加文件到暂存区
 git add .           # 添加所有修改的文件
-git commit -m "提交说明"  # 提交到本地仓库
+git commit -m "提交说明"  # 提交到本地仓库（-m 直接指定提交信息）
 git log             # 查看提交历史
 git diff            # 查看未暂存的修改
+```
+
+**`-m` 参数详解：**
+
+`-m` 是 message 的缩写，用于在命令行中直接指定提交信息，无需打开编辑器。
+
+```bash
+# 使用 -m 快速提交
+git commit -m "提交信息"
+
+# 不使用 -m，会打开编辑器编写提交信息
+git commit
+
+# 多行提交信息
+git commit -m "标题" -m "详细描述第一行" -m "详细描述第二行"
+```
+
+**提交信息规范（约定式提交）：**
+
+| 前缀 | 说明 | 示例 |
+|------|------|------|
+| `feat:` | 新功能 | `feat: 添加用户登录功能` |
+| `fix:` | 修复 Bug | `fix: 修复保存文件时的错误` |
+| `docs:` | 文档更新 | `docs: 更新README说明` |
+| `style:` | 代码格式 | `style: 调整代码缩进` |
+| `refactor:` | 重构代码 | `refactor: 优化代码结构` |
+| `test:` | 测试相关 | `test: 添加单元测试` |
+| `chore:` | 构建/工具 | `chore: 更新构建配置` |
+
+**查看提交历史：**
+```bash
+git log                     # 查看完整提交历史
+git log --oneline           # 简洁显示（每行一个提交）
+git log --oneline -5        # 只显示最近 5 个提交
+git log --oneline --graph   # 带图形显示分支结构
+git log --oneline --graph --all  # 显示所有分支的历史
+git log --merges            # 只显示合并提交
+git show <commit-hash>      # 查看特定提交的详细内容
 ```
 
 **分支操作：**
@@ -185,9 +223,60 @@ git push
 
 ---
 
-## 四、Pull Request 工作流
+## 四、查看合并记录
 
-### 4.1 创建 Pull Request
+### 4.1 本地查看合并记录
+
+**查看完整历史（带图形）：**
+```bash
+git log --oneline --graph --all
+```
+- 显示所有分支的提交历史
+- 用图形展示分支合并结构
+- 最直观的查看方式
+
+**只查看合并提交：**
+```bash
+git log --merges
+```
+- 只显示 Merge commits
+- 不显示普通提交
+
+**查看特定提交详情：**
+```bash
+git show <commit-hash>
+```
+- 显示该提交的完整信息
+- 包括修改的文件和具体内容
+
+**查看当前分支历史：**
+```bash
+git log --oneline --graph
+```
+- 只显示当前分支的历史
+
+### 4.2 GitHub 上查看合并记录
+
+**方法一：Commits 页面**
+1. 打开仓库页面
+2. 点击 **"Commits"** 标签
+3. 查看所有提交历史
+
+**方法二：Network 图（可视化）**
+1. 点击 **"Insights"**
+2. 选择 **"Network"**
+3. 可视化查看分支和合并结构
+
+**方法三：Pull Requests**
+1. 点击 **"Pull requests"** 标签
+2. 查看 **"Closed"** 的 PR
+3. 可以看到已合并的 PR 详情
+
+---
+
+## 五、Pull Request 工作流
+
+### 5.1 创建 Pull Request
 
 1. **推送你的分支到远程**
    ```bash
@@ -205,7 +294,7 @@ git push
    - 选择目标分支（通常是 main）
    - 点击 `Create pull request`
 
-### 4.2 Pull Request 最佳实践
+### 5.2 Pull Request 最佳实践
 
 **描述模板：**
 ```markdown
@@ -234,7 +323,7 @@ Closes #123
 
 示例：`feat: 添加用户登录功能`
 
-### 4.3 代码审查
+### 5.3 代码审查
 
 **审查者应该检查：**
 - 代码逻辑是否正确
@@ -248,7 +337,7 @@ Closes #123
 - `Approve`: 批准合并
 - `Request changes`: 要求修改后再合并
 
-### 4.4 合并策略
+### 5.4 合并策略
 
 | 策略 | 说明 | 适用场景 |
 |------|------|----------|
@@ -258,9 +347,9 @@ Closes #123
 
 ---
 
-## 五、文档编写与项目管理
+## 六、文档编写与项目管理
 
-### 5.1 README.md 编写指南
+### 6.1 README.md 编写指南
 
 README 是项目的入口文档，应该包含：
 
@@ -295,14 +384,14 @@ README 是项目的入口文档，应该包含：
 MIT / Apache 2.0 等
 ```
 
-### 5.2 GitHub Wiki
+### 6.2 GitHub Wiki
 
 每个仓库都有 Wiki 系统：
 - 用于详细的项目文档
 - 可以创建多个页面
 - 支持 Markdown 编写
 
-### 5.3 GitHub Issues 使用
+### 6.3 GitHub Issues 使用
 
 **Issue 模板：**
 ```markdown
@@ -331,7 +420,7 @@ MIT / Apache 2.0 等
 - 设置截止日期
 - 跟踪项目进度
 
-### 5.4 GitHub Projects（项目管理）
+### 6.4 GitHub Projects（项目管理）
 
 类似 Trello 的看板工具：
 - 创建 Project 看板
@@ -339,7 +428,7 @@ MIT / Apache 2.0 等
 - 拖动卡片管理状态
 - 可设置自动化规则
 
-### 5.5 GitHub Actions（CI/CD）
+### 6.5 GitHub Actions（CI/CD）
 
 自动化工作流示例：
 
@@ -367,9 +456,9 @@ jobs:
 
 ---
 
-## 六、常用 GitHub 技巧
+## 七、常用 GitHub 技巧
 
-### 6.1 键盘快捷键
+### 7.1 键盘快捷键
 
 | 快捷键 | 功能 |
 |--------|------|
@@ -379,7 +468,7 @@ jobs:
 | `s` | 聚焦搜索框 |
 | `?` | 显示所有快捷键 |
 
-### 6.2 GitHub CLI
+### 7.2 GitHub CLI
 
 ```bash
 # 安装 GitHub CLI
@@ -398,7 +487,7 @@ gh pr status
 gh pr merge PR编号
 ```
 
-### 6.3 GitHub Desktop
+### 7.3 GitHub Desktop
 
 - 图形化 Git 工具
 - 适合不熟悉命令行的初学者
@@ -407,7 +496,7 @@ gh pr merge PR编号
 
 ---
 
-## 七、学习路径建议
+## 八、学习路径建议
 
 ### 第一阶段：入门（1-2天）
 1. 创建 GitHub 账号
@@ -435,7 +524,184 @@ gh pr merge PR编号
 
 ---
 
-## 八、推荐资源
+## 十、常用 Git 命令参数速查
+
+### 10.1 git status 参数
+
+```bash
+git status              # 查看当前状态
+git status -s           # 简洁模式（短格式输出）
+git status -b           # 显示分支信息
+git status --ignored    # 显示被忽略的文件
+```
+
+### 10.2 git add 参数
+
+```bash
+git add 文件名           # 添加指定文件
+git add .               # 添加当前目录所有文件
+git add -A              # 添加所有文件（包括删除的）
+git add -u              # 只添加已跟踪的修改文件
+git add -p              # 交互式添加（逐块选择）
+```
+
+### 10.3 git commit 参数
+
+```bash
+git commit -m "信息"     # 直接指定提交信息
+git commit              # 打开编辑器编写提交信息
+git commit -a           # 添加所有已跟踪文件并提交
+git commit -am "信息"    # 组合：添加已跟踪文件 + 提交信息
+git commit --amend      # 修改最后一次提交（追加修改）
+git commit --no-verify  # 跳过提交前钩子检查
+```
+
+### 10.4 git log 参数
+
+```bash
+git log                 # 完整提交历史
+git log --oneline       # 简洁显示（每行一个提交）
+git log -n              # 显示最近 n 个提交（如 -5）
+git log --graph         # 带图形显示分支结构
+git log --all           # 显示所有分支的历史
+git log --merges        # 只显示合并提交
+git log --author="名字"  # 按作者筛选
+git log --since="日期"   # 按时间筛选（如 --since="2026-01-01"）
+git log --until="日期"   # 按时间筛选（如 --until="2026-06-06"）
+git log -p              # 显示每次提交的差异
+git log --stat          # 显示文件修改统计
+```
+
+**常用组合：**
+```bash
+git log --oneline --graph --all    # 最常用的查看方式
+git log --oneline -5               # 最近 5 个提交
+git log --oneline --author="CHICK-GU"  # 查看自己的提交
+```
+
+### 10.5 git branch 参数
+
+```bash
+git branch              # 查看本地分支
+git branch -a           # 查看所有分支（包括远程）
+git branch -r           # 只查看远程分支
+git branch 分支名        # 创建新分支
+git branch -d 分支名     # 删除已合并的分支
+git branch -D 分支名     # 强制删除分支（未合并也可删除）
+git branch -m 新名       # 重命名当前分支
+git branch -m 旧名 新名   # 重命名指定分支
+git branch -v            # 显示分支及最后一次提交
+git branch --merged      # 显示已合并到当前分支的分支
+git branch --no-merged   # 显示未合并的分支
+```
+
+### 10.6 git checkout 参数
+
+```bash
+git checkout 分支名      # 切换分支
+git checkout -b 新分支名  # 创建并切换到新分支
+git checkout 文件名       # 恢复文件到最新提交状态
+git checkout -- 文件名    # 恢复文件（显式指定）
+git checkout HEAD 文件名  # 恢复文件到 HEAD 状态
+git checkout 提交哈希     # 切换到指定提交（游离状态）
+```
+
+### 10.7 git merge 参数
+
+```bash
+git merge 分支名         # 合并分支
+git merge --no-ff 分支名  # 禁用快进合并（创建合并提交）
+git merge --ff-only 分支名 # 只允许快进合并
+git merge --abort        # 取消正在进行的合并
+git merge --continue     # 解决冲突后继续合并
+```
+
+### 10.8 git push 参数
+
+```bash
+git push                 # 推送到上游分支
+git push origin 分支名    # 推送到指定远程分支
+git push -u origin 分支名 # 推送并设置上游分支
+git push --force         # 强制推送（覆盖远程历史）
+git push --force-with-lease # 安全强制推送
+git push --all           # 推送所有分支
+git push --tags          # 推送所有标签
+git push origin --delete 分支名 # 删除远程分支
+```
+
+### 10.9 git pull 参数
+
+```bash
+git pull                 # 拉取并合并
+git pull origin 分支名    # 拉取指定远程分支
+git pull --rebase        # 拉取后变基（而非合并）
+git pull --ff-only       # 只允许快进合并
+```
+
+### 10.10 git remote 参数
+
+```bash
+git remote               # 显示远程仓库名
+git remote -v            # 显示远程仓库详细信息
+git remote add origin URL # 添加远程仓库
+git remote remove origin  # 删除远程仓库
+git remote set-url origin URL # 修改远程仓库地址
+git remote rename 旧名 新名 # 重命名远程仓库
+```
+
+### 10.11 git diff 参数
+
+```bash
+git diff                 # 查看未暂存的修改
+git diff --staged        # 查看已暂存的修改
+git diff --cached        # 同 --staged
+git diff HEAD            # 查看与 HEAD 的差异
+git diff 分支1 分支2      # 比较两个分支
+git diff 提交1 提交2      # 比较两个提交
+git diff --stat          # 只显示统计信息
+git diff --name-only     # 只显示修改的文件名
+```
+
+### 10.12 git show 参数
+
+```bash
+git show                 # 显示最后一次提交
+git show 提交哈希         # 显示指定提交
+git show 提交哈希:文件名   # 显示指定提交中的文件内容
+```
+
+### 10.13 git reset 参数
+
+```bash
+git reset 文件名          # 取消暂存（保留修改）
+git reset --hard         # 重置到 HEAD（丢弃所有修改）
+git reset --soft         # 重置到 HEAD（保留修改在暂存区）
+git reset --mixed        # 重置到 HEAD（保留修改在工作区）
+git reset HEAD~n         # 回退 n 个提交
+```
+
+### 10.14 git restore 参数（Git 2.23+）
+
+```bash
+git restore 文件名        # 恢复工作区文件
+git restore --staged 文件名 # 取消暂存
+git restore --source=HEAD 文件名 # 从 HEAD 恢复
+```
+
+### 10.15 git stash 参数
+
+```bash
+git stash                # 暂存当前修改
+git stash list           # 查看暂存列表
+git stash pop            # 恢复并删除暂存
+git stash apply          # 恢复但不删除暂存
+git stash drop           # 删除暂存
+git stash clear          # 清除所有暂存
+```
+
+---
+
+## 十一、推荐资源
 
 - **官方文档**: docs.github.com
 - **Git 官方文档**: git-scm.com/doc
