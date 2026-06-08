@@ -11,6 +11,7 @@ void printMenu() {
     std::cout << "5. 保存到文件" << std::endl;      // 新增
     std::cout << "6. 从文件加载" << std::endl;      // 新增
     std::cout << "7. 退出" << std::endl;            // 原来的5改为7
+    std::cout << "8. 搜索待办事项" << std::endl;
     std::cout << "请输入选项: ";
 }
 
@@ -67,6 +68,15 @@ int main() {
                 manager.saveTodos(filename);
                 std::cout << "感谢使用待办事项管理器！" << std::endl;
                 break;
+            // 在 switch 中添加
+            case 8: {
+                std::string keyword;
+                std::cout << "请输入搜索关键词: ";
+                std::cin.ignore();
+                std::getline(std::cin, keyword);
+                manager.searchTodos(keyword);
+                break;
+            }
             default:
                 std::cout << "无效选项，请重新输入！" << std::endl;
         }

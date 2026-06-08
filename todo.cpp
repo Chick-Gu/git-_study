@@ -96,3 +96,30 @@ void TodoManager::loadTodos(const std::string& filename) {
     
     std::cout << "已从文件加载 " << todos.size() << " 个待办事项" << std::endl;
 }
+
+void TodoManager::searchTodos(const std::string& keyword) const {
+    std::vector<TodoItem> results;
+    
+    for (const auto& todo : todos) {
+        // 搜索标题和描述
+        if (todo.title.find(keyword) != std::string::npos ||
+            todo.description.find(keyword) != std::string::npos) {
+            results.push_back(todo);
+        }
+    }
+    
+    if (results.empty()) {
+        std::cout << "未找到包含 \"" << keyword << "\" 的待办事项" << std::endl;
+        return;
+    }
+    
+    std::cout << "\n===== 搜索结果（共 " << results.size() << " 条）=====" << std::endl;
+    for (const auto& todo : results) {
+        std::cout << "[" << (todo.completed ? "✓" : " ") << "] ";
+        std::cout << "#" << todo.id << " " << todo.title << std::endl;
+        if (!todo.description.empty()) {
+            std::cout << "    描述: " << todo.description << std::endl;
+        }
+    }
+    std::cout << "============================\n" << std::endl;
+}
