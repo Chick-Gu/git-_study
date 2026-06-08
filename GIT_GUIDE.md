@@ -195,102 +195,30 @@ git push -u origin 分支名  # 首次推送并设置上游分支
 6. 原项目维护者审查并决定是否合并
 ```
 
-### 3.3 解决合并冲突
+### 3.3 解决冲突
 
-当多人同时修改同一文件的同一位置时，Git 无法自动决定保留哪个版本，就会产生**合并冲突**。
-
-#### 3.3.1 冲突产生的条件
-
-1. 两个分支修改了**同一文件**
-2. 修改了文件的**同一位置**（重叠的行）
-3. Git 无法自动判断保留哪个版本
-
-#### 3.3.2 解决冲突的完整流程
+当多人同时修改同一文件时会产生冲突：
 
 ```bash
-# 1. 尝试合并，触发冲突
-git merge feature-branch
+# 1. 先拉取最新代码
+git pull origin main
 
-# 输出示例：
-# CONFLICT (content): Merge conflict in main.cpp
-# Automatic merge failed; fix conflicts and then commit the result.
-```
+# 2. 如果有冲突，Git 会在文件中标记冲突部分
+<<<<<<< HEAD
+你的修改
+=======
+他人的修改
+>>>>>>> 其他分支
 
-```bash
-# 2. 查看冲突状态
-git status
+# 3. 手动编辑解决冲突，删除标记符号
+# 4. 标记冲突已解决
+git add 冲突文件
 
-# 输出示例：
-# Unmerged paths:
-#   (use "git restore --staged <file>..." to unstage)
-#   (use "git add <file>..." to mark resolution)
-#         both modified:   main.cpp
-```
+# 5. 提交合并
+git commit -m "解决冲突"
 
-#### 3.3.3 冲突标记详解
-
-当冲突发生时，Git 会在文件中插入冲突标记：
-
-```cpp
-<<<<<<< HEAD          // 当前分支（HEAD）的内容开始
-当前分支的代码内容
-=======               // 分隔线（上方是当前分支，下方是要合并的分支）
-要合并的分支的代码内容
->>>>>>> feature-branch  // 要合并的分支名
-```
-
-#### 3.3.4 手动解决冲突
-
-1. **打开冲突文件**，删除冲突标记（`<<<<<<< HEAD`、`=======`、`>>>>>>> 分支名`）
-2. **编辑代码**，保留正确的内容
-3. **保存文件**
-
-#### 3.3.5 完成合并
-
-```bash
-# 1. 标记冲突已解决
-git add 冲突文件名
-
-# 2. 提交合并结果
-git commit -m "fix: 合并冲突 - 描述解决方式"
-
-# 3. 推送到远程
-git push origin master
-```
-
-#### 3.3.6 取消合并
-
-如果不想继续合并，可以取消：
-
-```bash
-git merge --abort
-```
-
-#### 3.3.7 示例：完整流程
-
-```bash
-# 创建两个分支并修改同一文件
-git checkout -b feature/a
-# 修改文件并提交
-git add . && git commit -m "feat: 修改标题"
-
-git checkout master
-git checkout -b feature/b
-# 修改同一文件的同一位置并提交
-git add . && git commit -m "feat: 添加版本号"
-
-# 合并第一个分支（成功）
-git checkout master
-git merge feature/a
-
-# 合并第二个分支（冲突）
-git merge feature/b
-# → CONFLICT (content): Merge conflict in main.cpp
-
-# 手动解决冲突后
-git add main.cpp
-git commit -m "fix: 合并冲突 - 保留版本号"
-git push origin master
+# 6. 推送到远程
+git push
 ```
 
 ---
@@ -565,6 +493,86 @@ gh pr merge PR编号
 - 适合不熟悉命令行的初学者
 - 可视化分支管理
 - 官网：desktop.github.com
+
+### 7.4 GitHub Issues
+
+#### 7.4.1 什么是 Issues
+
+GitHub Issues 是 GitHub 内置的任务跟踪系统，用于：
+- 跟踪待办事项和任务
+- 报告和跟踪 Bug
+- 记录功能请求
+- 团队协作和讨论
+
+#### 7.4.2 Issue 类型与标签
+
+| 类型 | 说明 | 常用标签 |
+|------|------|----------|
+| Bug Report | 报告代码错误 | `bug`, `bugfix` |
+| Feature Request | 请求新功能 | `enhancement`, `feature` |
+| Documentation | 文档相关 | `documentation`, `docs` |
+| Question | 问题咨询 | `question`, `help` |
+| Help Wanted | 需要帮助 | `help wanted`, `good first issue` |
+
+#### 7.4.3 Issue 关键字（提交信息中使用）
+
+在提交信息或 PR 描述中使用以下关键字可以自动关联和关闭 Issue：
+
+| 关键字 | 说明 | 示例 |
+|--------|------|------|
+| `closes` | 合并后关闭 Issue | `closes #2` |
+| `fixes` | 合并后关闭 Issue（适合 Bug） | `fixes #5` |
+| `resolves` | 合并后关闭 Issue | `resolves #8` |
+| `references` | 关联但不关闭 | `references #10` |
+
+**示例提交信息：**
+```bash
+git commit -m "feat: 添加搜索功能, closes #2"
+git commit -m "fix: 修复空描述崩溃问题, fixes #5"
+```
+
+#### 7.4.4 Issue 模板
+
+常见的 Issue 模板文件：
+- `.github/ISSUE_TEMPLATE/bug_report.md` - Bug 报告模板
+- `.github/ISSUE_TEMPLATE/feature_request.md` - 功能请求模板
+- `.github/ISSUE_TEMPLATE/question.md` - 问题咨询模板
+
+#### 7.4.5 完整工作流
+
+```bash
+# 1. 创建功能分支
+git checkout -b feature/add-search
+
+# 2. 实现功能并提交（关联 Issue）
+git commit -m "feat: 添加搜索功能, closes #2"
+
+# 3. 推送到远程
+git push -u origin feature/add-search
+
+# 4. 在 GitHub 创建 PR（会自动关联 Issue）
+
+# 5. 合并 PR 后，Issue #2 会自动关闭
+```
+
+#### 7.4.6 GitHub CLI 操作 Issues
+
+```bash
+# 查看 Issues
+gh issue list
+
+# 创建 Issue
+gh issue create --title "标题" --body "描述" --label "enhancement"
+
+# 查看 Issue 详情
+gh issue view 编号
+
+# 关闭 Issue
+gh issue close 编号
+
+# 为 Issue 添加标签
+gh issue edit 编号 --add-label "bug"
+```
 
 ---
 
