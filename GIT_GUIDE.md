@@ -195,30 +195,102 @@ git push -u origin 分支名  # 首次推送并设置上游分支
 6. 原项目维护者审查并决定是否合并
 ```
 
-### 3.3 解决冲突
+### 3.3 解决合并冲突
 
-当多人同时修改同一文件时会产生冲突：
+当多人同时修改同一文件的同一位置时，Git 无法自动决定保留哪个版本，就会产生**合并冲突**。
+
+#### 3.3.1 冲突产生的条件
+
+1. 两个分支修改了**同一文件**
+2. 修改了文件的**同一位置**（重叠的行）
+3. Git 无法自动判断保留哪个版本
+
+#### 3.3.2 解决冲突的完整流程
 
 ```bash
-# 1. 先拉取最新代码
-git pull origin main
+# 1. 尝试合并，触发冲突
+git merge feature-branch
 
-# 2. 如果有冲突，Git 会在文件中标记冲突部分
-<<<<<<< HEAD
-你的修改
-=======
-他人的修改
->>>>>>> 其他分支
+# 输出示例：
+# CONFLICT (content): Merge conflict in main.cpp
+# Automatic merge failed; fix conflicts and then commit the result.
+```
 
-# 3. 手动编辑解决冲突，删除标记符号
-# 4. 标记冲突已解决
-git add 冲突文件
+```bash
+# 2. 查看冲突状态
+git status
 
-# 5. 提交合并
-git commit -m "解决冲突"
+# 输出示例：
+# Unmerged paths:
+#   (use "git restore --staged <file>..." to unstage)
+#   (use "git add <file>..." to mark resolution)
+#         both modified:   main.cpp
+```
 
-# 6. 推送到远程
-git push
+#### 3.3.3 冲突标记详解
+
+当冲突发生时，Git 会在文件中插入冲突标记：
+
+```cpp
+<<<<<<< HEAD          // 当前分支（HEAD）的内容开始
+当前分支的代码内容
+=======               // 分隔线（上方是当前分支，下方是要合并的分支）
+要合并的分支的代码内容
+>>>>>>> feature-branch  // 要合并的分支名
+```
+
+#### 3.3.4 手动解决冲突
+
+1. **打开冲突文件**，删除冲突标记（`<<<<<<< HEAD`、`=======`、`>>>>>>> 分支名`）
+2. **编辑代码**，保留正确的内容
+3. **保存文件**
+
+#### 3.3.5 完成合并
+
+```bash
+# 1. 标记冲突已解决
+git add 冲突文件名
+
+# 2. 提交合并结果
+git commit -m "fix: 合并冲突 - 描述解决方式"
+
+# 3. 推送到远程
+git push origin master
+```
+
+#### 3.3.6 取消合并
+
+如果不想继续合并，可以取消：
+
+```bash
+git merge --abort
+```
+
+#### 3.3.7 示例：完整流程
+
+```bash
+# 创建两个分支并修改同一文件
+git checkout -b feature/a
+# 修改文件并提交
+git add . && git commit -m "feat: 修改标题"
+
+git checkout master
+git checkout -b feature/b
+# 修改同一文件的同一位置并提交
+git add . && git commit -m "feat: 添加版本号"
+
+# 合并第一个分支（成功）
+git checkout master
+git merge feature/a
+
+# 合并第二个分支（冲突）
+git merge feature/b
+# → CONFLICT (content): Merge conflict in main.cpp
+
+# 手动解决冲突后
+git add main.cpp
+git commit -m "fix: 合并冲突 - 保留版本号"
+git push origin master
 ```
 
 ---
