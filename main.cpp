@@ -19,7 +19,7 @@ int main() {
     int choice;
     const std::string filename = "todos.txt";  // 数据文件名
 
-    std::cout << "欢迎使用待办事项管理器BETA版本！" << std::endl;
+    std::cout << "欢迎使用待办事项管理器 v2.0！" << std::endl;
     
     // 程序启动时自动加载
     manager.loadTodos(filename);
