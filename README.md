@@ -17,6 +17,14 @@
 | 保存到文件 | 将待办事项保存到 `todos.txt` 文件 |
 | 从文件加载 | 从文件读取已保存的待办事项 |
 | 自动持久化 | 程序启动/退出时自动加载/保存数据 |
+| 默认描述 | 空描述自动填充为"暂无描述" |
+| 搜索功能 | 按关键词搜索待办事项 |
+| 优先级设置 | 支持 LOW/MEDIUM/HIGH 三级优先级 |
+| 截止日期 | 支持设置任务截止日期 |
+| 标签系统 | 支持添加多个自定义标签 |
+| 按优先级排序 | 高优先级任务优先显示 |
+| 过期提醒 | 自动检测并显示已过期任务 |
+| 按标签筛选 | 按标签分类查看任务 |
 
 ## 项目结构
 
@@ -63,15 +71,26 @@ todo_manager.exe      # Windows
 #### TodoItem 结构体
 
 ```cpp
+// 优先级枚举
+enum class Priority {
+    LOW,
+    MEDIUM,
+    HIGH
+};
+
 struct TodoItem {
     int id;                    // 待办事项的唯一标识符
     std::string title;         // 待办事项的标题
-    std::string description;  // 待办事项的详细描述（可选）
+    std::string description;   // 待办事项的详细描述（可选）
     bool completed;            // 完成状态标记
+    Priority priority;         // 优先级（LOW/MEDIUM/HIGH）
+    std::string dueDate;       // 截止日期（YYYY-MM-DD 格式）
+    std::vector<std::string> tags;  // 标签列表
 
     // 构造函数，使用初始化列表初始化成员
     TodoItem(int id, const std::string& title, const std::string& desc)
-        : id(id), title(title), description(desc), completed(false) {}
+        : id(id), title(title), description(desc), completed(false),
+          priority(Priority::MEDIUM), dueDate("") {}
 };
 ```
 
@@ -79,6 +98,9 @@ struct TodoItem {
 - `id` 使用 `int` 类型，从 1 开始自增
 - 使用 `std::string` 存储文本内容
 - `completed` 布尔值标记完成状态
+- `priority` 使用枚举类实现类型安全的优先级
+- `dueDate` 存储截止日期，格式为 YYYY-MM-DD
+- `tags` 使用 `std::vector` 存储多个标签
 - 构造函数使用**初始化列表**语法，提高效率
 
 #### TodoManager 类
@@ -92,13 +114,23 @@ private:
 public:
     TodoManager() : nextId(1) {}   // 构造函数，初始化 nextId 为 1
 
+    // 基础功能
     void addTodo(const std::string& title, const std::string& description);
     void completeTodo(int id);
     void removeTodo(int id);
     void listTodos() const;
     int getTodoCount() const;
+    
+    // 数据持久化
     void saveTodos(const std::string& filename) const;  // 保存到文件
     void loadTodos(const std::string& filename);        // 从文件加载
+    
+    // 高级功能
+    void searchTodos(const std::string& keyword) const;  // 搜索待办事项
+    void sortByPriority() const;                         // 按优先级排序
+    void displayOverdueTodos() const;                    // 显示过期任务
+    void addTagToTodo(int id, const std::string& tag);   // 添加标签
+    void filterByTag(const std::string& tag) const;      // 按标签筛选
 };
 ```
 
@@ -106,6 +138,7 @@ public:
 - 使用 `std::vector` 作为容器，支持动态大小
 - `nextId` 保证每个待办事项有唯一 ID
 - 所有成员函数声明在类内，实现放在 todo.cpp 中
+- 方法按功能分组，提高可读性
 
 ---
 
@@ -211,6 +244,11 @@ void printMenu() {
     std::cout << "5. 保存到文件" << std::endl;
     std::cout << "6. 从文件加载" << std::endl;
     std::cout << "7. 退出" << std::endl;
+    std::cout << "8. 搜索待办事项" << std::endl;
+    std::cout << "9. 按优先级排序" << std::endl;
+    std::cout << "10. 查看过期待办" << std::endl;
+    std::cout << "11. 添加标签" << std::endl;
+    std::cout << "12. 按标签筛选" << std::endl;
     std::cout << "请输入选项: ";
 }
 ```
@@ -375,14 +413,18 @@ int main() {
 |--------|-------------|
 | **类封装** | `TodoManager` 类封装了所有业务逻辑 |
 | **结构体** | `TodoItem` 结构体组织相关数据 |
+| **枚举类** | `Priority` 枚举实现类型安全的优先级 |
 | **构造函数初始化列表** | `TodoItem(int id, ...)` 使用初始化列表 |
 | **STL 容器** | `std::vector<TodoItem>` 存储待办事项 |
 | **迭代器** | `todos.begin()`, `todos.end()`, `erase()` |
 | **范围 for 循环** | `for (const auto& todo : todos)` |
+| **Lambda 表达式** | 用于排序比较函数 |
+| **标准算法** | `std::sort`, `std::find` |
 | **引用 & 常量引用 const&** | 避免拷贝，提高效率 |
 | **string 处理** | `std::string`, `std::getline()` |
 | **输入输出流** | `std::cin`, `std::cout` |
 | **文件流** | `std::ofstream` 写入文件, `std::ifstream` 读取文件 |
+| **日期时间处理** | `time_t`, `localtime`, `strftime` |
 | **控制流程** | `switch-case`, `do-while` |
 
 ---
