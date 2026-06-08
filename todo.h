@@ -29,4 +29,5 @@ public:
     int getTodoCount() const;
     void saveTodos(const std::string& filename) const;
     void loadTodos(const std::string& filename);
+    void searchTodos(const std::string& keyword) const;
 };
