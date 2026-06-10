@@ -574,6 +574,137 @@ gh issue close 编号
 gh issue edit 编号 --add-label "bug"
 ```
 
+### 7.5 GitHub Projects（项目管理看板）
+
+#### 7.5.1 什么是 GitHub Projects
+
+GitHub Projects 是 GitHub 内置的项目管理工具，提供可视化任务管理：
+
+| 功能 | 说明 |
+|------|------|
+| **看板视图 (Kanban)** | 可视化任务卡片管理 |
+| **表格视图 (Table)** | 列表式任务管理 |
+| **自动化工作流** | 自动移动卡片、关闭任务 |
+| **与 Issues/PR 集成** | 无缝协作 |
+
+#### 7.5.2 创建项目看板
+
+**操作步骤：**
+1. 打开仓库，点击顶部 **"Projects"** 标签
+2. 点击 **"New project"** 按钮
+3. 选择模板：**Kanban**（看板）或 **Table**（表格）
+4. 填写项目名称和描述
+5. 点击 **"Create project"**
+
+#### 7.5.3 看板列配置
+
+**推荐列顺序：**
+
+| 列名 | 说明 | 使用场景 |
+|------|------|----------|
+| **To do** | 待办任务池 | 新任务、未规划 |
+| **Ready** | 准备开始 | 已分析、可立即开始 |
+| **In progress** | 进行中 | 正在开发 |
+| **In Review** | 审查中 | PR 已提交，等待审查 |
+| **Done** | 已完成 | 任务完成、PR 已合并 |
+
+**添加自定义列：**
+1. 点击列标题右侧的 **三个点图标 (...)** 
+2. 选择 **"Add column"**
+3. 输入列名并按 Enter
+4. 拖拽调整列位置
+
+#### 7.5.4 任务卡片操作
+
+**创建卡片：**
+- 点击列底部的 **"+"** 按钮
+- 输入任务标题，按 Enter 创建
+- 在看板创建卡片会自动生成仓库 Issue
+
+**添加已有 Issue：**
+- 点击输入框右侧的图标
+- 选择 **"Add from repository"**
+- 搜索并选择已有 Issue
+
+**编辑卡片：**
+- 点击卡片打开详情面板
+- 添加描述、负责人、标签、里程碑等
+- 关联 Issue 或 Pull Request
+
+**移动卡片：**
+- 用鼠标拖拽卡片到目标列
+- 表示任务状态变更
+
+#### 7.5.5 自动化工作流
+
+**进入设置：**
+- 点击项目右上角的 **齿轮图标**（Settings）
+- 选择 **"Workflows"**
+
+**可用自动化：**
+
+| 工作流 | 触发条件 | 动作 |
+|--------|----------|------|
+| **Item added to project** | 新 Issue/PR 添加 | 移到指定列（如 To do） |
+| **Item reopened** | Issue 重新打开 | 移到 To do |
+| **Pull request ready for review** | PR 创建 | 移到 In Review |
+| **Pull request merged** | PR 合并 | 移到 Done |
+| **Issue closed** | Issue 关闭 | 移到 Done |
+
+**启用自动化：**
+1. 找到目标工作流
+2. 点击开关启用（变为绿色）
+3. 设置目标列
+
+#### 7.5.6 卡片与 Issue 的关系
+
+| 操作 | 结果 |
+|------|------|
+| 在看板创建新卡片 | 自动创建新 Issue |
+| 添加已有 Issue | 卡片链接到该 Issue |
+| 关闭 Issue | 卡片自动移到 Done（需启用自动化） |
+| 删除卡片 | Issue 不会被删除 |
+| 一个 Issue | 可出现在多个项目中 |
+
+#### 7.5.7 GitHub CLI 操作 Projects
+
+```bash
+# 查看项目列表
+gh project list
+
+# 创建项目
+gh project create "项目名称" --owner 用户名
+
+# 添加 Issue 到项目
+gh project item-add 项目编号 --url IssueURL
+
+# 查看项目内容
+gh project view 项目编号
+
+# 编辑项目项
+gh project item-edit 项目编号 --id 项目项ID --field-id 字段ID --value 值
+```
+
+#### 7.5.8 最佳实践
+
+**项目命名建议：**
+- `项目名 Development` - 开发任务看板
+- `Bug Tracking` - Bug 追踪看板
+- `Release v1.0` - 版本发布看板
+
+**工作流程：**
+```
+创建 Issue → To do → Ready → In progress → In Review → Done
+    │         │        │          │            │         │
+  新任务    规划完成  开始编码   提交PR      审查通过   合并完成
+```
+
+**团队协作建议：**
+- 为每个卡片指定负责人（Assignees）
+- 使用标签分类任务类型
+- 设置里程碑追踪进度
+- 定期回顾看板状态
+
 ---
 
 ## 八、学习路径建议
