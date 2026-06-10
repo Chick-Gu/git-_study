@@ -1019,6 +1019,319 @@ git reset --soft HEAD~1
 git reset --hard 提交哈希
 ```
 
+### 9.8 git reflog（操作记录）
+
+**什么是 reflog？**
+
+reflog 记录了所有 HEAD 和分支引用的移动历史，是 Git 的"后悔药"。即使提交被删除或分支被重置，reflog 也能帮你找回。
+
+**基本用法：**
+```bash
+# 查看所有操作记录
+git reflog
+
+# 查看特定分支的操作记录
+git reflog show master
+
+# 查看 HEAD 的操作记录
+git reflog show HEAD
+```
+
+**输出示例：**
+```
+abc1234 HEAD@{0}: commit: 添加新功能
+def5678 HEAD@{1}: reset: moving to HEAD~3
+ghi9012 HEAD@{2}: commit: 修复 Bug
+jkl3456 HEAD@{3}: commit: 更新文档
+```
+
+**恢复误操作：**
+```bash
+# 场景 1: 恢复误删的提交
+git reset --hard HEAD~3          # 误删了 3 个提交
+git reflog                       # 找到删除前的哈希（如 abc1234）
+git reset --hard abc1234         # 恢复！
+
+# 场景 2: 恢复误删的分支
+git branch -D feature/my-work    # 误删了分支
+git reflog                       # 找到分支最后的提交哈希
+git checkout -b feature/my-work abc1234  # 恢复分支
+
+# 场景 3: 恢复误操作的 merge
+git reset --hard HEAD~1          # 误撤销了 merge
+git reflog                       # 找到 merge 的哈希
+git reset --hard abc1234         # 恢复 merge
+```
+
+**reflog 有效期：**
+- 默认保留 90 天
+- 可通过 `git gc.reflogExpire` 配置
+- 过期后记录会被清理
+
+**使用场景：**
+- 恢复误删的提交或分支
+- 查看操作历史，了解发生了什么
+- 找回"丢失"的代码
+- 调试复杂的 Git 操作
+
+### 9.9 git blame（代码追溯）
+
+**什么是 blame？**
+
+查看文件中每一行最后修改的提交和作者，用于追溯代码变更历史。
+
+**基本用法：**
+```bash
+# 查看文件每一行的最后修改者
+git blame 文件名
+
+# 查看指定行范围
+git blame -L 10,20 文件名
+
+# 查看从某行到文件末尾
+git blame -L 10, 文件名
+
+# 忽略空格修改
+git blame -w 文件名
+
+# 显示完整的提交哈希（缩写）
+git blame -l 文件名
+```
+
+**输出示例：**
+```
+abc1234 (张三 2026-06-01 10:30:00 +0800  1) #include <iostream>
+def5678 (李四 2026-06-02 14:20:00 +0800  2) #include <vector>
+abc1234 (张三 2026-06-01 10:30:00 +0800  3)
+ghi9012 (王五 2026-06-03 09:15:00 +0800  4) int main() {
+```
+
+**使用场景：**
+- 查找某行代码是谁写的
+- 了解代码变更历史
+- 代码审查时追溯修改来源
+- 调试时查看相关代码的修改记录
+
+**高级用法：**
+```bash
+# 查看特定提交的修改
+git blame -C 文件名              # 检测代码移动/复制
+
+# 结合 git log 使用
+git blame --since="2026-06-01" 文件名  # 只看指定日期后的修改
+
+# 查看文件某个版本的 blame
+git blame v1.0.0 -- 文件名       # 查看 v1.0.0 版本的 blame
+```
+
+### 9.10 git bisect（二分查找）
+
+**什么是 bisect？**
+
+使用二分查找法定位引入 Bug 的提交，高效排查问题。
+
+**基本用法：**
+```bash
+# 1. 开始二分查找
+git bisect start
+
+# 2. 标记当前版本有问题
+git bisect bad
+
+# 3. 标记一个正常的版本
+git bisect good v1.0.0
+
+# 4. Git 自动切换到中间版本，测试后标记
+git bisect bad    # 如果有问题
+git bisect good   # 如果正常
+
+# 5. 重复步骤 4，直到找到问题提交
+
+# 6. 结束查找
+git bisect reset
+```
+
+**自动二分查找：**
+```bash
+# 使用测试脚本自动查找
+git bisect start
+git bisect bad HEAD
+git bisect good v1.0.0
+
+# Git 会自动执行测试脚本
+git bisect run ./test-script.sh
+
+# 测试脚本返回 0 表示正常，非 0 表示有问题
+```
+
+**示例场景：**
+```bash
+# 场景：最近的某个版本出现了 Bug
+git bisect start
+git bisect bad                    # 当前版本有问题
+git bisect good abc1234           # 上周的版本正常
+
+# Git 切换到中间版本
+# 运行测试...
+git bisect bad                    # 这个版本也有问题
+
+# Git 继续二分...
+# 运行测试...
+git bisect good                   # 这个版本正常
+
+# 最终找到问题提交
+# [abc1234] is the first bad commit
+
+git bisect reset                  # 结束查找
+```
+
+**使用场景：**
+- 定位引入 Bug 的提交
+- 排查回归问题
+- 验证修复是否有效
+- 大型项目的高效调试
+
+### 9.11 git worktree（多工作目录）
+
+**什么是 worktree？**
+
+允许同时检出多个分支到不同目录，无需 stash 或 commit 就能切换工作。
+
+**基本用法：**
+```bash
+# 创建新的工作目录
+git worktree add ../feature-branch feature/my-feature
+
+# 列出所有工作目录
+git worktree list
+
+# 删除工作目录
+git worktree remove ../feature-branch
+
+# 清理无效的工作目录引用
+git worktree prune
+```
+
+**使用场景：**
+```bash
+# 场景 1: 同时开发多个功能
+git worktree add ../feature-a feature/a
+git worktree add ../feature-b feature/b
+
+# 在不同目录同时工作
+cd ../feature-a
+# 开发功能 A...
+
+cd ../feature-b
+# 开发功能 B...
+
+# 场景 2: 修复紧急 Bug 时不中断当前工作
+git worktree add ../hotfix hotfix/critical-fix
+cd ../hotfix
+# 修复 Bug...
+git commit -m "fix: 紧急修复"
+git checkout master
+cd ../main-project
+# 继续当前工作...
+
+# 场景 3: 代码审查
+git worktree add ../review feature/new-feature
+cd ../review
+# 审查代码...
+```
+
+**优势：**
+- 无需 stash 或 commit 切换分支
+- 可以同时查看多个分支的代码
+- 保持工作区整洁
+- 适合多任务并行开发
+
+### 9.12 git alias（自定义别名）
+
+**什么是 alias？**
+
+为常用 Git 命令创建简短的别名，提高工作效率。
+
+**配置方法：**
+```bash
+# 全局配置（推荐）
+git config --global alias.co checkout
+git config --global alias.br branch
+git config --global alias.ci commit
+git config --global alias.st status
+git config --global alias.lg "log --oneline --graph --all"
+git config --global alias.last "log -1 HEAD"
+git config --global alias.unstage "reset HEAD --"
+git config --global alias.visual "gitk"
+
+# 项目级配置（只在当前项目生效）
+git config alias.co checkout
+```
+
+**常用别名推荐：**
+```bash
+# 基础操作
+git config --global alias.co checkout
+git config --global alias.br branch
+git config --global alias.ci commit
+git config --global alias.st status
+
+# 日志查看
+git config --global alias.lg "log --oneline --graph --all"
+git config --global alias.ll "log --oneline -10"
+git config --global alias.last "log -1 HEAD --stat"
+
+# 撤销操作
+git config --global alias.unstage "reset HEAD --"
+git config --global alias.undo "reset --soft HEAD~1"
+git config --global alias.amend "commit --amend --no-edit"
+
+# 差异查看
+git config --global alias.df "diff"
+git config --global alias.dfs "diff --staged"
+
+# 分支操作
+git config --global alias.ba "branch -a"
+git config --global alias.bd "branch -d"
+git config --global alias.bD "branch -D"
+```
+
+**使用示例：**
+```bash
+# 使用别名
+git co master          # 等同于 git checkout master
+git st                 # 等同于 git status
+git ci -m "提交信息"   # 等同于 git commit -m "提交信息"
+git lg                 # 查看图形化日志
+git ll                 # 查看最近 10 个提交
+git unstage 文件名     # 取消暂存
+git undo               # 撤销最后一次提交（保留修改）
+```
+
+**高级别名：**
+```bash
+# 带参数的别名
+git config --global alias.mergelog "log --oneline --graph --merges"
+
+# 组合命令
+git config --global alias.sync "!git fetch origin && git merge origin/main"
+
+# 执行外部命令
+git config --global alias.open "!start"
+```
+
+**查看和删除别名：**
+```bash
+# 查看所有别名
+git config --global --get-regexp alias
+
+# 查看特定别名
+git config --global alias.co
+
+# 删除别名
+git config --global --unset alias.co
+```
+
 ---
 
 ## 十、常用 Git 命令参数速查
